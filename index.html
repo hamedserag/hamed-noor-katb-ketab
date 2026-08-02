@@ -27,11 +27,8 @@
             <p class="invitation-line">نتشرف بدعوتكم لمشاركتنا فرحة</p>
             <h1>كتب كتاب</h1>
             <div class="names">حامد <span>و</span> نور</div>
-            <div class="date-lockup">
-              <span>السبت</span>
-              <strong>٣ أكتوبر ٢٠٢٦</strong>
-            </div>
-            <button class="primary-button open-button" id="openInvitation" type="button">افتح الدعوة</button>
+            <div class="date-lockup"><span>السبت</span><strong>٣ أكتوبر ٢٠٢٦</strong></div>
+            <button class="primary-button open-button" id="openInvitation" type="button">افتح الدعوة واستمع للموسيقى</button>
           </div>
         </div>
       </div>
@@ -78,9 +75,10 @@
         <article><span>بدء كتب الكتاب</span><strong>٦:٠٠ مساءً</strong></article>
       </div>
       <div class="actions">
-        <a class="primary-button" href="https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic" target="_blank" rel="noreferrer">فتح الموقع على الخريطة</a>
+        <a class="primary-button" id="mapLink" href="https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic" target="_blank" rel="noopener noreferrer">فتح الموقع في Google Maps</a>
         <a class="secondary-button" id="calendarLink" href="#">إضافة إلى التقويم</a>
       </div>
+      <p class="map-fallback">إن لم يفتح التطبيق، <a href="https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic" target="_blank" rel="noopener noreferrer">اضغط هنا لفتح رابط الموقع مباشرة</a>.</p>
     </section>
 
     <section class="section rsvp reveal">
@@ -110,11 +108,11 @@
     </section>
   </main>
 
-  <button class="music-toggle" id="musicToggle" type="button" aria-label="تشغيل أو إيقاف الموسيقى"><span>♫</span></button>
-  <div class="youtube-player" aria-hidden="true">
-    <iframe id="musicPlayer" title="موسيقى الدعوة" src="https://www.youtube.com/embed/2c0UFobfOiM?enablejsapi=1&playsinline=1&loop=1&playlist=2c0UFobfOiM&controls=0&rel=0" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-  </div>
+  <button class="music-toggle" id="musicToggle" type="button" aria-label="تشغيل الموسيقى"><span>♫</span></button>
+  <div class="youtube-player" aria-hidden="true"><div id="musicPlayer"></div></div>
+  <a class="music-fallback" id="musicFallback" href="https://youtube.com/shorts/2c0UFobfOiM?si=hjaQ8RWySI4OEFrv" target="_blank" rel="noopener noreferrer" hidden>فتح الموسيقى على YouTube</a>
 
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script src="app.js"></script>
 </body>
 </html>
