@@ -12,107 +12,75 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="palace-glow glow-one"></div>
-  <div class="palace-glow glow-two"></div>
-
+  <div class="palace-glow glow-one"></div><div class="palace-glow glow-two"></div>
   <header class="hero" id="top">
     <div class="palace-frame">
-      <div class="lantern lantern-right"><i></i></div>
-      <div class="lantern lantern-left"><i></i></div>
-      <div class="arch arch-outer">
-        <div class="arch arch-middle">
-          <div class="arch arch-inner">
-            <p class="eyebrow">بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيمِ</p>
-            <div class="ornament">✦</div>
-            <p class="invitation-line">نتشرف بدعوتكم لمشاركتنا فرحة</p>
-            <h1>كتب كتاب</h1>
-            <div class="names">حامد <span>و</span> نور</div>
-            <div class="date-lockup"><span>السبت</span><strong>٣ أكتوبر ٢٠٢٦</strong></div>
-            <button class="primary-button open-button" id="openInvitation" type="button">افتح الدعوة واستمع للموسيقى</button>
-          </div>
-        </div>
-      </div>
+      <div class="lantern lantern-right"><i></i></div><div class="lantern lantern-left"><i></i></div>
+      <div class="arch arch-outer"><div class="arch arch-middle"><div class="arch arch-inner">
+        <p class="eyebrow">بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيمِ</p>
+        <figure class="opening-portrait"><img src="assets/opening.svg" alt="رسم لحامد ونور" /></figure>
+        <p class="invitation-line">نتشرف بدعوتكم لمشاركتنا فرحة</p>
+        <h1>كتب كتاب</h1>
+        <div class="names">حامد <span>و</span> نور</div>
+        <div class="date-lockup"><span>السبت</span><strong>٣ أكتوبر ٢٠٢٦</strong></div>
+        <button class="primary-button open-button" id="openInvitation" type="button">افتح الدعوة واستمع للموسيقى</button>
+      </div></div></div>
       <div class="candle-row" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></div>
     </div>
   </header>
 
   <main id="invitation" hidden>
-    <section class="section intro reveal">
-      <div class="section-arch">
-        <p class="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</p>
-        <div class="divider"><span></span>✦<span></span></div>
-        <p class="lead">بكل الحب، يسعدنا أن تشاركونا بداية حكايتنا.</p>
-      </div>
-    </section>
+    <section class="section intro reveal"><div class="section-arch">
+      <p class="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</p>
+      <div class="divider"><span></span>✦<span></span></div>
+      <p class="lead">بكل الحب، يسعدنا أن تشاركونا بداية حكايتنا.</p>
+    </div></section>
 
     <section class="section countdown-section reveal">
       <p class="section-label">باقي على فرحتنا</p>
       <div class="countdown" aria-live="polite">
-        <div><strong id="days">٠</strong><span>يوم</span></div>
-        <div><strong id="hours">٠</strong><span>ساعة</span></div>
-        <div><strong id="minutes">٠</strong><span>دقيقة</span></div>
-        <div><strong id="seconds">٠</strong><span>ثانية</span></div>
+        <div><strong id="days">٠</strong><span>يوم</span></div><div><strong id="hours">٠</strong><span>ساعة</span></div>
+        <div><strong id="minutes">٠</strong><span>دقيقة</span></div><div><strong id="seconds">٠</strong><span>ثانية</span></div>
       </div>
     </section>
 
     <section class="section gallery-section reveal">
-      <p class="section-label">من حكايتنا</p>
-      <h2>ذكريات تجمعنا</h2>
+      <p class="section-label">من حكايتنا</p><h2>ذكريات تجمعنا</h2>
       <div class="gallery">
-        <figure class="photo-card"><div class="photo-placeholder"><span>صورتكما الأولى</span></div></figure>
-        <figure class="photo-card featured"><div class="photo-placeholder"><span>الصورة الرئيسية</span></div></figure>
-        <figure class="photo-card"><div class="photo-placeholder"><span>صورتكما الثالثة</span></div></figure>
+        <figure class="photo-card"><img class="memory-one" src="assets/memory-1.svg" alt="حامد ونور في إحدى لحظاتهما السعيدة" /><figcaption>من ضحكاتنا</figcaption></figure>
+        <figure class="photo-card featured"><img class="memory-two" src="assets/memory-2.svg" alt="حامد ونور في صورة أمام المرآة" /><figcaption>من حكايتنا</figcaption></figure>
+        <figure class="photo-card"><img class="memory-three" src="assets/memory-3.svg" alt="حامد ونور معًا" /><figcaption>معًا دائمًا</figcaption></figure>
       </div>
-      <p class="hint">سيتم استبدال هذه الإطارات بصوركما الحقيقية.</p>
     </section>
 
     <section class="section details reveal">
-      <p class="section-label">الموعد والمكان</p>
-      <h2>مسجد قصر محمد علي بالمنيل</h2>
+      <p class="section-label">الموعد والمكان</p><h2>مسجد قصر محمد علي بالمنيل</h2>
       <p class="location-note">في أجواء القصر التاريخية، نتشرف بحضوركم مراسم كتب كتابنا.</p>
-      <div class="time-grid">
-        <article><span>استقبال الضيوف</span><strong>٥:٣٠ مساءً</strong></article>
-        <article><span>بدء كتب الكتاب</span><strong>٦:٠٠ مساءً</strong></article>
-      </div>
+      <div class="time-grid"><article><span>استقبال الضيوف</span><strong>٥:٣٠ مساءً</strong></article><article><span>بدء كتب الكتاب</span><strong>٦:٠٠ مساءً</strong></article></div>
       <div class="actions">
-        <a class="primary-button" id="mapLink" href="https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic" target="_blank" rel="noopener noreferrer">فتح الموقع في Google Maps</a>
+        <a class="primary-button" id="mapLink" href="https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic" target="_blank" rel="noopener noreferrer">فتح الموقع على الخريطة</a>
         <a class="secondary-button" id="calendarLink" href="#">إضافة إلى التقويم</a>
       </div>
-      <p class="map-fallback">إن لم يفتح التطبيق، <a href="https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic" target="_blank" rel="noopener noreferrer">اضغط هنا لفتح رابط الموقع مباشرة</a>.</p>
+      <a class="direct-map-link" href="https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic" target="_blank" rel="noopener noreferrer">رابط الموقع المباشر</a>
     </section>
 
     <section class="section rsvp reveal">
-      <p class="section-label">تأكيد الحضور</p>
-      <h2>يسعدنا حضوركم</h2>
+      <p class="section-label">تأكيد الحضور</p><h2>يسعدنا حضوركم</h2>
       <form id="rsvpForm">
         <label>الاسم الكامل<input name="name" required autocomplete="name" /></label>
-        <label>هل ستشاركنا الفرحة؟
-          <select name="attendance" required>
-            <option value="">اختر</option>
-            <option value="yes">نعم، بإذن الله</option>
-            <option value="no">أعتذر عن الحضور</option>
-          </select>
-        </label>
+        <label>هل ستشاركنا الفرحة؟<select name="attendance" required><option value="">اختر</option><option value="yes">نعم، بإذن الله</option><option value="no">أعتذر عن الحضور</option></select></label>
         <label>عدد الحضور<input name="guests" type="number" min="1" max="10" value="1" /></label>
         <label>رسالة للعروسين<textarea name="message" rows="3"></textarea></label>
-        <button class="primary-button" type="submit">إرسال التأكيد</button>
-        <p class="form-status" id="formStatus" role="status"></p>
+        <button class="primary-button" type="submit">إرسال التأكيد</button><p class="form-status" id="formStatus" role="status"></p>
       </form>
     </section>
 
-    <section class="section closing reveal">
-      <div class="monogram">ح ن</div>
-      <h2>بانتظاركم لتكتمل فرحتنا</h2>
-      <p>حامد ونور</p>
-      <a href="#top">العودة إلى البداية</a>
-    </section>
+    <section class="section closing reveal"><div class="monogram">ح ن</div><h2>بانتظاركم لتكتمل فرحتنا</h2><p>حامد ونور</p><a href="#top">العودة إلى البداية</a></section>
   </main>
 
   <button class="music-toggle" id="musicToggle" type="button" aria-label="تشغيل الموسيقى"><span>♫</span></button>
   <div class="youtube-player" aria-hidden="true"><div id="musicPlayer"></div></div>
   <a class="music-fallback" id="musicFallback" href="https://youtube.com/shorts/2c0UFobfOiM?si=hjaQ8RWySI4OEFrv" target="_blank" rel="noopener noreferrer" hidden>فتح الموسيقى على YouTube</a>
-
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="app.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script><script src="app.js"></script>
 </body>
 </html>
