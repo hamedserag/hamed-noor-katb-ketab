@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#2b151b" />
+  <meta name="description" content="دعوة كتب كتاب حامد ونور" />
+  <title>كتب كتاب حامد ونور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <header class="hero" id="top">
+    <div class="arch">
+      <div class="arch-inner">
+        <p class="eyebrow">بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيمِ</p>
+        <div class="monogram" aria-hidden="true">ح ن</div>
+        <p class="invitation-line">نتشرف بدعوتكم لمشاركتنا فرحة</p>
+        <h1>كتب كتاب</h1>
+        <div class="names">حامد <span>&amp;</span> نور</div>
+        <p class="date">السبت، ٣ أكتوبر ٢٠٢٦</p>
+        <button class="primary-button" id="openInvitation" type="button">افتح الدعوة</button>
+      </div>
+    </div>
+    <div class="candles" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
+  </header>
+
+  <main id="invitation" hidden>
+    <section class="section intro reveal">
+      <p class="verse">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</p>
+      <div class="divider">✦</div>
+      <p>بكل الحب، يسعدنا أن تشاركونا بداية حكايتنا.</p>
+    </section>
+
+    <section class="section countdown-section reveal">
+      <p class="section-label">باقي على فرحتنا</p>
+      <div class="countdown" id="countdown" aria-live="polite">
+        <div><strong id="days">٠</strong><span>يوم</span></div>
+        <div><strong id="hours">٠</strong><span>ساعة</span></div>
+        <div><strong id="minutes">٠</strong><span>دقيقة</span></div>
+        <div><strong id="seconds">٠</strong><span>ثانية</span></div>
+      </div>
+    </section>
+
+    <section class="section gallery-section reveal">
+      <p class="section-label">من حكايتنا</p>
+      <h2>ذكريات تجمعنا</h2>
+      <div class="gallery">
+        <figure class="photo-card"><div class="photo-placeholder">صورتكما الأولى</div></figure>
+        <figure class="photo-card tall"><div class="photo-placeholder">الصورة الرئيسية</div></figure>
+        <figure class="photo-card"><div class="photo-placeholder">صورتكما الثالثة</div></figure>
+      </div>
+      <p class="hint">استبدل الصور المؤقتة بصوركما داخل مجلد <code>assets</code>.</p>
+    </section>
+
+    <section class="section details reveal">
+      <p class="section-label">الموعد والمكان</p>
+      <h2>مسجد قصر محمد علي بالمنيل</h2>
+      <div class="time-grid">
+        <article><span>استقبال الضيوف</span><strong>٥:٣٠ مساءً</strong></article>
+        <article><span>بدء كتب الكتاب</span><strong>٦:٠٠ مساءً</strong></article>
+      </div>
+      <div class="actions">
+        <a class="primary-button" href="https://maps.google.com" target="_blank" rel="noreferrer">فتح الموقع</a>
+        <a class="secondary-button" id="calendarLink" href="#">إضافة للتقويم</a>
+      </div>
+    </section>
+
+    <section class="section rsvp reveal">
+      <p class="section-label">تأكيد الحضور</p>
+      <h2>يسعدنا حضوركم</h2>
+      <form id="rsvpForm">
+        <label>الاسم الكامل<input name="name" required autocomplete="name" /></label>
+        <label>هل ستشاركنا الفرحة؟
+          <select name="attendance" required>
+            <option value="">اختر</option>
+            <option value="yes">نعم، بإذن الله</option>
+            <option value="no">أعتذر عن الحضور</option>
+          </select>
+        </label>
+        <label>عدد الحضور<input name="guests" type="number" min="1" max="10" value="1" /></label>
+        <label>رسالة للعروسين<textarea name="message" rows="3"></textarea></label>
+        <button class="primary-button" type="submit">إرسال التأكيد</button>
+        <p class="form-status" id="formStatus" role="status"></p>
+      </form>
+    </section>
+
+    <section class="section closing reveal">
+      <div class="monogram small">ح ن</div>
+      <h2>بانتظاركم لتكتمل فرحتنا</h2>
+      <p>حامد ونور</p>
+      <a href="#top">العودة إلى البداية</a>
+    </section>
+  </main>
+
+  <button class="music-toggle" id="musicToggle" type="button" aria-label="تشغيل أو إيقاف الموسيقى">♫</button>
+  <audio id="backgroundMusic" loop preload="none"></audio>
+  <script src="app.js"></script>
+</body>
+</html>
