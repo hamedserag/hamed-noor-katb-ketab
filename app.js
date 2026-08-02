@@ -2,12 +2,13 @@ const arabicDigits = new Intl.NumberFormat('ar-EG', { useGrouping: false });
 const invitation = document.getElementById('invitation');
 const openButton = document.getElementById('openInvitation');
 const musicToggle = document.getElementById('musicToggle');
-const audio = document.getElementById('backgroundMusic');
+const musicPlayer = document.getElementById('musicPlayer');
 const rsvpForm = document.getElementById('rsvpForm');
 const formStatus = document.getElementById('formStatus');
 const calendarLink = document.getElementById('calendarLink');
 
 const eventDate = new Date('2026-10-03T18:00:00+03:00');
+let musicPlaying = false;
 
 function updateCountdown() {
   const diff = Math.max(0, eventDate.getTime() - Date.now());
@@ -24,26 +25,31 @@ function updateCountdown() {
   });
 }
 
+function sendPlayerCommand(command) {
+  if (!musicPlayer?.contentWindow) return;
+  musicPlayer.contentWindow.postMessage(JSON.stringify({
+    event: 'command',
+    func: command,
+    args: []
+  }), '*');
+}
+
+function setMusicState(shouldPlay) {
+  musicPlaying = shouldPlay;
+  sendPlayerCommand(shouldPlay ? 'playVideo' : 'pauseVideo');
+  musicToggle.classList.toggle('playing', shouldPlay);
+  musicToggle.querySelector('span').textContent = shouldPlay ? '❚❚' : '♫';
+  musicToggle.setAttribute('aria-label', shouldPlay ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى');
+}
+
 openButton.addEventListener('click', () => {
   invitation.hidden = false;
   document.body.classList.add('opened');
-  invitation.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setMusicState(true);
+  setTimeout(() => invitation.scrollIntoView({ behavior: 'smooth', block: 'start' }), 180);
 });
 
-musicToggle.addEventListener('click', async () => {
-  if (!audio.src) {
-    formStatus.textContent = 'أضف ملف الموسيقى إلى assets/music.mp3 ثم حدّث مصدر الصوت.';
-    return;
-  }
-
-  if (audio.paused) {
-    await audio.play();
-    musicToggle.textContent = '❚❚';
-  } else {
-    audio.pause();
-    musicToggle.textContent = '♫';
-  }
-});
+musicToggle.addEventListener('click', () => setMusicState(!musicPlaying));
 
 rsvpForm.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -55,9 +61,12 @@ rsvpForm.addEventListener('submit', (event) => {
   rsvpForm.reset();
 });
 
-const calendarStart = '20261003T150000Z';
+const calendarStart = '20261003T143000Z';
 const calendarEnd = '20261003T180000Z';
-calendarLink.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('كتب كتاب حامد ونور')}&dates=${calendarStart}/${calendarEnd}&details=${encodeURIComponent('استقبال الضيوف ٥:٣٠ مساءً وبدء كتب الكتاب ٦:٠٠ مساءً')}&location=${encodeURIComponent('مسجد قصر محمد علي بالمنيل')}`;
+const calendarTitle = 'كتب كتاب حامد ونور';
+const calendarDetails = 'استقبال الضيوف ٥:٣٠ مساءً، وبدء مراسم كتب الكتاب ٦:٠٠ مساءً.';
+const calendarLocation = 'مسجد قصر محمد علي بالمنيل';
+calendarLink.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(calendarTitle)}&dates=${calendarStart}/${calendarEnd}&details=${encodeURIComponent(calendarDetails)}&location=${encodeURIComponent(calendarLocation)}`;
 calendarLink.target = '_blank';
 calendarLink.rel = 'noreferrer';
 
