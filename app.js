@@ -7,6 +7,7 @@ const mapLink = document.getElementById('mapLink');
 const rsvpForm = document.getElementById('rsvpForm');
 const formStatus = document.getElementById('formStatus');
 const calendarLink = document.getElementById('calendarLink');
+const gallery = document.getElementById('gallery');
 
 const MAP_URL = 'https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic';
 const VIDEO_ID = '2c0UFobfOiM';
@@ -21,7 +22,6 @@ let touchStartY = null;
 
 mapLink.href = MAP_URL;
 mapLink.addEventListener('click', () => {
-  // Reapply the exact shared Maps URL in case a browser extension rewrites the anchor.
   mapLink.href = MAP_URL;
 });
 
@@ -56,7 +56,6 @@ function playMusic() {
   requestedMusic = true;
 
   if (!playerReady || !player) {
-    // The player is still loading; onPlayerReady will complete the request.
     musicToggle.classList.add('loading');
     return;
   }
@@ -169,7 +168,6 @@ openButton.addEventListener('click', () => {
   openInvitation({ scrollIntoView: true, startMusic: true });
 });
 
-// The invitation opens on the first downward scroll/swipe so the button is optional.
 window.addEventListener('wheel', handleWheel, { passive: false });
 window.addEventListener('touchstart', handleTouchStart, { passive: true });
 window.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -180,15 +178,79 @@ musicToggle.addEventListener('click', () => {
   else playMusic();
 });
 
-rsvpForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const data = Object.fromEntries(new FormData(rsvpForm).entries());
+function savePreviewRsvp(data) {
   const submissions = JSON.parse(localStorage.getItem('katbKetabRsvp') || '[]');
   submissions.push({ ...data, submittedAt: new Date().toISOString() });
   localStorage.setItem('katbKetabRsvp', JSON.stringify(submissions));
-  formStatus.textContent = 'تم تسجيل ردكم على هذا الجهاز. شكرًا لمشاركتنا فرحتنا.';
-  rsvpForm.reset();
+}
+
+rsvpForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(rsvpForm).entries());
+  const submitButton = rsvpForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  formStatus.textContent = 'جارٍ تسجيل تأكيد الحضور...';
+
+  try {
+    const response = await fetch('api/rsvp.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.ok !== true) {
+      throw new Error(payload.message || 'تعذر تسجيل الرد الآن.');
+    }
+    formStatus.textContent = payload.message || 'تم تسجيل تأكيد حضوركم.';
+    rsvpForm.reset();
+  } catch (error) {
+    const isStaticPreview = location.hostname.endsWith('github.io') || location.protocol === 'file:';
+    if (isStaticPreview) {
+      savePreviewRsvp(data);
+      formStatus.textContent = 'هذه نسخة GitHub التجريبية؛ تم حفظ الرد على هذا الجهاز فقط. النسخة المنشورة على Hostinger ستسجل الرد في قاعدة البيانات.';
+      rsvpForm.reset();
+    } else {
+      console.error('RSVP submission failed:', error);
+      formStatus.textContent = error.message || 'تعذر تسجيل الرد الآن. يرجى المحاولة مرة أخرى.';
+    }
+  } finally {
+    submitButton.disabled = false;
+  }
 });
+
+async function loadUploadedImages() {
+  if (!gallery) return;
+  try {
+    const response = await fetch('api/images.php', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (!payload.ok || !Array.isArray(payload.images)) return;
+
+    payload.images.forEach((item) => {
+      const figure = document.createElement('figure');
+      figure.className = 'photo-card uploaded-card';
+
+      const img = document.createElement('img');
+      img.src = item.url;
+      img.alt = item.altText || item.caption || 'صورة من حكايتنا';
+      img.loading = 'lazy';
+      figure.appendChild(img);
+
+      if (item.caption) {
+        const caption = document.createElement('figcaption');
+        caption.textContent = item.caption;
+        figure.appendChild(caption);
+      }
+
+      gallery.appendChild(figure);
+    });
+  } catch (error) {
+    // GitHub Pages is a static preview and intentionally has no PHP API.
+    if (!location.hostname.endsWith('github.io')) {
+      console.error('Could not load uploaded gallery images:', error);
+    }
+  }
+}
 
 const calendarStart = '20261003T143000Z';
 const calendarEnd = '20261003T180000Z';
@@ -201,3 +263,4 @@ calendarLink.rel = 'noopener noreferrer';
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
+loadUploadedImages();
