@@ -1,0 +1,36 @@
+CREATE TABLE IF NOT EXISTS admin_users (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    username VARCHAR(120) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_admin_users_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS rsvp_responses (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    guest_name VARCHAR(160) NOT NULL,
+    attendance ENUM('yes','no') NOT NULL,
+    guests TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    message VARCHAR(1500) NULL,
+    user_agent VARCHAR(500) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY ix_rsvp_created_at (created_at),
+    KEY ix_rsvp_attendance (attendance)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS site_images (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    file_name VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(80) NOT NULL,
+    caption VARCHAR(180) NULL,
+    alt_text VARCHAR(220) NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_site_images_file_name (file_name),
+    KEY ix_site_images_display (is_active, sort_order, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
