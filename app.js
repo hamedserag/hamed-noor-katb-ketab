@@ -16,6 +16,8 @@ let player = null;
 let playerReady = false;
 let requestedMusic = false;
 let musicPlaying = false;
+let invitationOpened = false;
+let touchStartY = null;
 
 mapLink.href = MAP_URL;
 mapLink.addEventListener('click', () => {
@@ -114,12 +116,64 @@ window.onYouTubeIframeAPIReady = function () {
   });
 };
 
+function removeAutoOpenListeners() {
+  window.removeEventListener('wheel', handleWheel);
+  window.removeEventListener('touchstart', handleTouchStart);
+  window.removeEventListener('touchmove', handleTouchMove);
+  window.removeEventListener('keydown', handleKeyDown);
+}
+
+function openInvitation({ scrollIntoView = true, startMusic = false } = {}) {
+  if (!invitationOpened) {
+    invitationOpened = true;
+    invitation.hidden = false;
+    document.body.classList.add('opened');
+    removeAutoOpenListeners();
+  }
+
+  if (startMusic) playMusic();
+
+  if (scrollIntoView) {
+    requestAnimationFrame(() => {
+      invitation.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+}
+
+function handleWheel(event) {
+  if (event.deltaY <= 0 || invitationOpened) return;
+  event.preventDefault();
+  openInvitation({ scrollIntoView: true, startMusic: false });
+}
+
+function handleTouchStart(event) {
+  touchStartY = event.touches[0]?.clientY ?? null;
+}
+
+function handleTouchMove(event) {
+  if (invitationOpened || touchStartY === null || !event.touches[0]) return;
+  const currentY = event.touches[0].clientY;
+  if (touchStartY - currentY < 16) return;
+  event.preventDefault();
+  openInvitation({ scrollIntoView: true, startMusic: false });
+}
+
+function handleKeyDown(event) {
+  const openingKeys = ['ArrowDown', 'PageDown', ' ', 'Spacebar'];
+  if (invitationOpened || !openingKeys.includes(event.key)) return;
+  event.preventDefault();
+  openInvitation({ scrollIntoView: true, startMusic: false });
+}
+
 openButton.addEventListener('click', () => {
-  invitation.hidden = false;
-  document.body.classList.add('opened');
-  playMusic();
-  setTimeout(() => invitation.scrollIntoView({ behavior: 'smooth', block: 'start' }), 180);
+  openInvitation({ scrollIntoView: true, startMusic: true });
 });
+
+// The invitation opens on the first downward scroll/swipe so the button is optional.
+window.addEventListener('wheel', handleWheel, { passive: false });
+window.addEventListener('touchstart', handleTouchStart, { passive: true });
+window.addEventListener('touchmove', handleTouchMove, { passive: false });
+window.addEventListener('keydown', handleKeyDown);
 
 musicToggle.addEventListener('click', () => {
   if (musicPlaying) pauseMusic();
