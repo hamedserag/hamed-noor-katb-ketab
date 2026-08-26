@@ -8,6 +8,12 @@ $baseConfig = [
     'db_user' => getenv('DB_USER') ?: '',
     'db_password' => getenv('DB_PASSWORD') ?: '',
     'max_upload_bytes' => 10 * 1024 * 1024,
+
+    // Guest photos are posted to Hostinger PHP first, then relayed server-to-server
+    // to the private Google Apps Script web app endpoint.
+    'guest_photo_upload_url' => getenv('GUEST_PHOTO_UPLOAD_URL') ?: '',
+    'guest_photo_upload_secret' => getenv('GUEST_PHOTO_UPLOAD_SECRET') ?: '',
+    'max_guest_photo_bytes' => 10 * 1024 * 1024,
 ];
 
 $localConfigFile = __DIR__ . '/config.local.php';
@@ -49,6 +55,12 @@ function db(): PDO {
     ]);
 
     return $pdo;
+}
+
+function guest_photo_upload_configured(): bool {
+    $url = trim((string)site_config('guest_photo_upload_url'));
+    $secret = trim((string)site_config('guest_photo_upload_secret'));
+    return $url !== '' && filter_var($url, FILTER_VALIDATE_URL) !== false && $secret !== '';
 }
 
 function start_secure_session(): void {
