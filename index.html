@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="final.css" />
+  <link rel="stylesheet" href="guest-upload.css" />
 </head>
 <body>
   <div class="palace-glow glow-one"></div><div class="palace-glow glow-two"></div>
@@ -65,6 +66,25 @@
         <label>عدد الحضور<input name="guests" type="number" min="1" max="10" value="1" /></label>
         <label>رسالة للعروسين<textarea name="message" rows="3"></textarea></label>
         <button class="primary-button" type="submit">إرسال التأكيد</button><p class="form-status" id="formStatus" role="status"></p>
+      </form>
+    </section>
+
+    <section class="section guest-photos reveal">
+      <p class="section-label">صور من فرحتنا</p>
+      <h2>شاركنا اللحظات التي التقطتها</h2>
+      <p class="guest-photo-note">بعد كتب الكتاب، يمكنك رفع صورك مباشرة من هاتفك. ستصل الصور إلى ألبوم حامد ونور الخاص على Google Drive.</p>
+      <form id="photoUploadForm" class="photo-upload-card" enctype="multipart/form-data">
+        <label>اسمك — اختياري<input id="photoGuestName" name="guest_name" maxlength="160" autocomplete="name" /></label>
+        <label class="photo-picker" for="guestPhotos">
+          <span class="photo-picker-icon" aria-hidden="true">＋</span>
+          <strong>اختر الصور من هاتفك</strong>
+          <small>يمكن اختيار حتى ٨ صور في المرة الواحدة — JPG / PNG / WebP / HEIC — بحد أقصى ١٠MB للصورة.</small>
+          <input id="guestPhotos" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" multiple />
+        </label>
+        <div id="photoSelection" class="photo-selection" hidden></div>
+        <div id="photoUploadProgress" class="upload-progress" hidden aria-hidden="true"><span></span></div>
+        <button id="photoUploadButton" class="primary-button" type="submit">رفع الصور إلى ألبومنا</button>
+        <p id="photoUploadStatus" class="photo-upload-status" role="status" aria-live="polite"></p>
       </form>
     </section>
 
