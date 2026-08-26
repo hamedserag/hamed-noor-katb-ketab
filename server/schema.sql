@@ -34,3 +34,20 @@ CREATE TABLE IF NOT EXISTS site_images (
     UNIQUE KEY uq_site_images_file_name (file_name),
     KEY ix_site_images_display (is_active, sort_order, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS guest_photo_uploads (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    guest_name VARCHAR(160) NULL,
+    original_name VARCHAR(255) NOT NULL,
+    stored_name VARCHAR(255) NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    size_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    drive_file_id VARCHAR(160) NULL,
+    drive_url VARCHAR(700) NULL,
+    upload_status ENUM('uploaded','failed') NOT NULL,
+    error_message VARCHAR(1000) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY ix_guest_photo_uploads_status (upload_status),
+    KEY ix_guest_photo_uploads_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
