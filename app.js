@@ -8,10 +8,20 @@ const rsvpForm = document.getElementById('rsvpForm');
 const formStatus = document.getElementById('formStatus');
 const calendarLink = document.getElementById('calendarLink');
 const gallery = document.getElementById('gallery');
+const photoUploadForm = document.getElementById('photoUploadForm');
+const photoGuestName = document.getElementById('photoGuestName');
+const guestPhotos = document.getElementById('guestPhotos');
+const photoSelection = document.getElementById('photoSelection');
+const photoUploadButton = document.getElementById('photoUploadButton');
+const photoUploadStatus = document.getElementById('photoUploadStatus');
+const photoUploadProgress = document.getElementById('photoUploadProgress');
+const photoUploadProgressBar = photoUploadProgress?.querySelector('span');
 
 const MAP_URL = 'https://maps.app.goo.gl/U77XKBWKZwy4YmFH8?g_st=ic';
 const VIDEO_ID = '2c0UFobfOiM';
 const eventDate = new Date('2026-10-03T18:00:00+03:00');
+const MAX_GUEST_PHOTOS = 8;
+const MAX_GUEST_PHOTO_BYTES = 10 * 1024 * 1024;
 
 let player = null;
 let playerReady = false;
@@ -19,6 +29,7 @@ let requestedMusic = false;
 let musicPlaying = false;
 let invitationOpened = false;
 let touchStartY = null;
+let selectedGuestPhotos = [];
 
 mapLink.href = MAP_URL;
 mapLink.addEventListener('click', () => {
@@ -215,6 +226,140 @@ rsvpForm.addEventListener('submit', async (event) => {
     }
   } finally {
     submitButton.disabled = false;
+  }
+});
+
+function formatFileSize(bytes) {
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function renderGuestPhotoSelection() {
+  if (!photoSelection) return;
+  photoSelection.innerHTML = '';
+
+  if (selectedGuestPhotos.length === 0) {
+    photoSelection.hidden = true;
+    return;
+  }
+
+  selectedGuestPhotos.forEach((file) => {
+    const row = document.createElement('div');
+    row.className = 'selected-photo';
+
+    const name = document.createElement('span');
+    name.textContent = file.name;
+
+    const size = document.createElement('small');
+    size.textContent = formatFileSize(file.size);
+
+    row.append(name, size);
+    photoSelection.appendChild(row);
+  });
+  photoSelection.hidden = false;
+}
+
+function setPhotoUploadProgress(current, total) {
+  if (!photoUploadProgress || !photoUploadProgressBar) return;
+  if (total <= 0) {
+    photoUploadProgress.hidden = true;
+    photoUploadProgressBar.style.width = '0%';
+    return;
+  }
+  photoUploadProgress.hidden = false;
+  photoUploadProgressBar.style.width = `${Math.round((current / total) * 100)}%`;
+}
+
+guestPhotos?.addEventListener('change', () => {
+  photoUploadStatus.textContent = '';
+  photoUploadStatus.className = 'photo-upload-status';
+
+  const files = Array.from(guestPhotos.files || []);
+  const accepted = [];
+  const rejected = [];
+
+  files.slice(0, MAX_GUEST_PHOTOS).forEach((file) => {
+    if (file.size <= 0 || file.size > MAX_GUEST_PHOTO_BYTES) {
+      rejected.push(`${file.name} أكبر من ١٠MB`);
+      return;
+    }
+    accepted.push(file);
+  });
+
+  if (files.length > MAX_GUEST_PHOTOS) {
+    rejected.push(`يمكن رفع ${MAX_GUEST_PHOTOS} صور فقط في المرة الواحدة`);
+  }
+
+  selectedGuestPhotos = accepted;
+  renderGuestPhotoSelection();
+
+  if (rejected.length > 0) {
+    photoUploadStatus.textContent = rejected.join(' — ');
+    photoUploadStatus.classList.add('error');
+  }
+});
+
+photoUploadForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  if (selectedGuestPhotos.length === 0) {
+    photoUploadStatus.textContent = 'اختر صورة واحدة على الأقل.';
+    photoUploadStatus.className = 'photo-upload-status error';
+    return;
+  }
+
+  const isStaticPreview = location.hostname.endsWith('github.io') || location.protocol === 'file:';
+  if (isStaticPreview) {
+    photoUploadStatus.textContent = 'رفع الصور يعمل من نسخة Hostinger فقط لأن GitHub Pages لا يشغّل PHP.';
+    photoUploadStatus.className = 'photo-upload-status error';
+    return;
+  }
+
+  photoUploadButton.disabled = true;
+  guestPhotos.disabled = true;
+  photoUploadStatus.className = 'photo-upload-status';
+  setPhotoUploadProgress(0, selectedGuestPhotos.length);
+
+  let uploaded = 0;
+  const total = selectedGuestPhotos.length;
+
+  try {
+    for (let index = 0; index < total; index += 1) {
+      const file = selectedGuestPhotos[index];
+      photoUploadStatus.textContent = `جارٍ رفع الصورة ${arabicDigits.format(index + 1)} من ${arabicDigits.format(total)}...`;
+
+      const formData = new FormData();
+      formData.append('guest_name', photoGuestName?.value.trim() || '');
+      formData.append('photo', file, file.name);
+
+      const response = await fetch('api/upload-photo.php', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: formData
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.ok !== true) {
+        throw new Error(payload.message || `تعذر رفع ${file.name}.`);
+      }
+
+      uploaded += 1;
+      setPhotoUploadProgress(uploaded, total);
+    }
+
+    photoUploadStatus.textContent = `تم رفع ${arabicDigits.format(uploaded)} صورة بنجاح إلى ألبومنا. شكرًا لمشاركتنا اللحظة.`;
+    photoUploadStatus.className = 'photo-upload-status success';
+    selectedGuestPhotos = [];
+    guestPhotos.value = '';
+    renderGuestPhotoSelection();
+  } catch (error) {
+    console.error('Guest photo upload failed:', error);
+    photoUploadStatus.textContent = `تم رفع ${arabicDigits.format(uploaded)} من ${arabicDigits.format(total)}. ${error.message || 'تعذر إكمال رفع الصور.'}`;
+    photoUploadStatus.className = 'photo-upload-status error';
+  } finally {
+    photoUploadButton.disabled = false;
+    guestPhotos.disabled = false;
+    if (uploaded === total) {
+      setTimeout(() => setPhotoUploadProgress(0, 0), 900);
+    }
   }
 });
 
