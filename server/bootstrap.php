@@ -60,7 +60,12 @@ function db(): PDO {
 function guest_photo_upload_configured(): bool {
     $url = trim((string)site_config('guest_photo_upload_url'));
     $secret = trim((string)site_config('guest_photo_upload_secret'));
-    return $url !== '' && filter_var($url, FILTER_VALIDATE_URL) !== false && $secret !== '';
+
+    return $url !== ''
+        && filter_var($url, FILTER_VALIDATE_URL) !== false
+        && !str_contains($url, 'PASTE_DEPLOYMENT_ID')
+        && $secret !== ''
+        && !str_starts_with($secret, 'CHANGE_ME');
 }
 
 function start_secure_session(): void {
