@@ -1,3 +1,9 @@
 server/config.local.php
 uploads/*
 !uploads/.htaccess
+!uploads/pending/
+uploads/pending/*
+!uploads/pending/.htaccess
+!uploads/bin/
+uploads/bin/*
+!uploads/bin/.htaccess

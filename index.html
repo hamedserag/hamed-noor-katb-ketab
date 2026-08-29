@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="final.css" />
   <link rel="stylesheet" href="guest-upload.css" />
+  <link rel="stylesheet" href="gallery-experience.css" />
 </head>
 <body>
   <div class="palace-glow glow-one"></div><div class="palace-glow glow-two"></div>
@@ -72,7 +73,7 @@
     <section class="section guest-photos reveal">
       <p class="section-label">صور من فرحتنا</p>
       <h2>شاركنا اللحظات التي التقطتها</h2>
-      <p class="guest-photo-note">بعد كتب الكتاب، يمكنك رفع صورك مباشرة من هاتفك. تحفظ الصور على موقع حامد ونور وتظهر في الألبوم العام أدناه.</p>
+      <p class="guest-photo-note">بعد كتب الكتاب، يمكنك رفع صورك مباشرة من هاتفك. نراجع الصور أولًا ثم نضيف الصور المناسبة إلى الألبوم العام.</p>
       <form id="photoUploadForm" class="photo-upload-card" enctype="multipart/form-data">
         <label>اسمك — اختياري<input id="photoGuestName" name="guest_name" maxlength="160" autocomplete="name" /></label>
         <label class="photo-picker" for="guestPhotos">
@@ -86,11 +87,34 @@
         <button id="photoUploadButton" class="primary-button" type="submit">رفع الصور إلى ألبومنا</button>
         <p id="photoUploadStatus" class="photo-upload-status" role="status" aria-live="polite"></p>
       </form>
-      <div id="gallery" class="gallery" aria-live="polite"></div>
+      <div id="galleryShowcase" class="gallery-showcase" hidden>
+        <div class="gallery-showcase-heading">
+          <div><p class="section-label">ألبوم حامد ونور</p><h3>لحظات بعدسات من نحب</h3></div>
+          <button id="openFullGallery" class="secondary-button gallery-open-button" type="button">عرض الألبوم كاملًا</button>
+        </div>
+        <div id="gallery" class="gallery-preview" aria-live="polite"></div>
+      </div>
     </section>
 
     <section class="section closing reveal"><div class="monogram">ح ن</div><h2>حضوركم يكتمل به فرحتنا</h2><p>حامد ونور</p><a href="#top">العودة إلى البداية</a></section>
   </main>
+
+  <dialog id="galleryDialog" class="gallery-dialog" aria-labelledby="galleryDialogTitle">
+    <div class="gallery-dialog-shell">
+      <header class="gallery-dialog-header">
+        <div><p>حامد ونور</p><h2 id="galleryDialogTitle">كل لحظات الألبوم</h2></div>
+        <button id="closeFullGallery" class="gallery-icon-button" type="button" aria-label="إغلاق الألبوم">×</button>
+      </header>
+      <div id="galleryWall" class="gallery-wall"></div>
+    </div>
+    <div id="galleryLightbox" class="gallery-lightbox" hidden>
+      <button id="closeLightbox" class="gallery-icon-button lightbox-close" type="button" aria-label="العودة إلى الألبوم">×</button>
+      <button id="previousGalleryImage" class="gallery-nav gallery-nav-previous" type="button" aria-label="الصورة السابقة">‹</button>
+      <figure><img id="galleryLightboxImage" alt=""><figcaption id="galleryLightboxCaption"></figcaption></figure>
+      <button id="nextGalleryImage" class="gallery-nav gallery-nav-next" type="button" aria-label="الصورة التالية">›</button>
+      <span id="galleryLightboxPosition" class="gallery-position"></span>
+    </div>
+  </dialog>
 
   <button class="music-toggle" id="musicToggle" type="button" aria-label="تشغيل الموسيقى"><span>♫</span></button>
   <div class="youtube-player" aria-hidden="true"><div id="musicPlayer"></div></div>

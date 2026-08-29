@@ -12,6 +12,8 @@ $mime = 'application/octet-stream';
 $size = 0;
 $storedName = null;
 $storedPath = null;
+$width = null;
+$height = null;
 
 try {
     if (mb_strlen($guestName) > 160) {
@@ -49,6 +51,14 @@ try {
         json_response(['ok' => false, 'message' => 'يسمح فقط بصور JPG وPNG وWebP وHEIC.'], 422);
     }
 
+    $dimensions = @getimagesize($tmpName);
+    if (is_array($dimensions)) {
+        $width = isset($dimensions[0]) ? (int)$dimensions[0] : null;
+        $height = isset($dimensions[1]) ? (int)$dimensions[1] : null;
+    } elseif (!in_array($mime, ['image/heic', 'image/heif'], true)) {
+        json_response(['ok' => false, 'message' => 'ملف الصورة غير صالح.'], 422);
+    }
+
     $originalName = mb_substr(trim((string)($file['name'] ?? 'photo')), 0, 255);
     if ($originalName === '') {
         $originalName = 'photo.' . $extensions[$mime];
@@ -62,23 +72,22 @@ try {
     );
 
     $pdo = db();
-    ensure_guest_photo_table($pdo);
+    ensure_runtime_schema($pdo);
 
-    $storageDirectory = guest_photo_storage_directory();
+    $storageDirectory = upload_storage_directory('pending/guest-photos');
     $storedPath = $storageDirectory . DIRECTORY_SEPARATOR . $storedName;
     if (!move_uploaded_file($tmpName, $storedPath)) {
         throw new RuntimeException('Could not move the uploaded image into Hostinger storage.');
     }
     @chmod($storedPath, 0644);
 
-    $relativePath = 'uploads/guest-photos/' . $storedName;
-    $publicUrl = '/' . $relativePath;
+    $relativePath = 'uploads/pending/guest-photos/' . $storedName;
 
     $stmt = $pdo->prepare(
         'INSERT INTO guest_photo_uploads
-            (guest_name, original_name, stored_name, mime_type, size_bytes, storage_path, public_url, is_visible, upload_status)
+            (guest_name, original_name, stored_name, mime_type, size_bytes, storage_path, public_url, is_visible, moderation_status, width_px, height_px, upload_status)
          VALUES
-            (:guest_name, :original_name, :stored_name, :mime_type, :size_bytes, :storage_path, :public_url, 1, :upload_status)'
+            (:guest_name, :original_name, :stored_name, :mime_type, :size_bytes, :storage_path, NULL, 0, :moderation_status, :width_px, :height_px, :upload_status)'
     );
     $stmt->execute([
         ':guest_name' => $guestName !== '' ? $guestName : null,
@@ -87,15 +96,17 @@ try {
         ':mime_type' => $mime,
         ':size_bytes' => $size,
         ':storage_path' => $relativePath,
-        ':public_url' => $publicUrl,
+        ':moderation_status' => 'pending',
+        ':width_px' => $width,
+        ':height_px' => $height,
         ':upload_status' => 'uploaded',
     ]);
 
     json_response([
         'ok' => true,
-        'message' => 'تم رفع الصورة وإضافتها إلى ألبوم حامد ونور. شكرًا لمشاركتنا اللحظة.',
+        'message' => 'تم استلام الصورة وستظهر في الألبوم بعد مراجعتها. شكرًا لمشاركتنا اللحظة.',
         'fileName' => $originalName,
-        'url' => $publicUrl,
+        'pendingReview' => true,
     ]);
 } catch (Throwable $e) {
     error_log('Guest photo upload error: ' . $e->getMessage());
@@ -107,7 +118,7 @@ try {
     try {
         if ($originalName !== '') {
             $pdo = db();
-            ensure_guest_photo_table($pdo);
+            ensure_runtime_schema($pdo);
             $stmt = $pdo->prepare(
                 'INSERT INTO guest_photo_uploads
                     (guest_name, original_name, stored_name, mime_type, size_bytes, upload_status, error_message)

@@ -8,26 +8,37 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 try {
     $pdo = db();
+    ensure_runtime_schema($pdo);
     $rows = $pdo->query(
-        'SELECT id, file_name, caption, alt_text, sort_order, created_at FROM site_images WHERE is_active = 1 ORDER BY sort_order ASC, created_at ASC'
+        "SELECT id, file_name, storage_path, caption, alt_text, width_px, height_px, sort_order, created_at
+         FROM site_images
+         WHERE is_active = 1 AND moderation_status = 'approved'
+         ORDER BY sort_order ASC, created_at ASC"
     )->fetchAll();
 
     $images = array_map(static function (array $row): array {
+        $path = trim((string)($row['storage_path'] ?? ''));
+        $url = $path !== ''
+            ? '/' . implode('/', array_map('rawurlencode', explode('/', ltrim($path, '/'))))
+            : '/uploads/' . rawurlencode((string)$row['file_name']);
         return [
-            'id' => (int)$row['id'],
-            'url' => 'uploads/' . rawurlencode((string)$row['file_name']),
+            'id' => 'site-' . (int)$row['id'],
+            'source' => 'site',
+            'url' => $url,
             'caption' => (string)($row['caption'] ?? ''),
             'altText' => (string)($row['alt_text'] ?? ''),
+            'width' => $row['width_px'] !== null ? (int)$row['width_px'] : null,
+            'height' => $row['height_px'] !== null ? (int)$row['height_px'] : null,
             'sortOrder' => (int)$row['sort_order'],
         ];
     }, $rows);
 
-    ensure_guest_photo_table($pdo);
     $guestRows = $pdo->query(
-        "SELECT id, guest_name, original_name, public_url, created_at
+        "SELECT id, guest_name, original_name, public_url, width_px, height_px, created_at
          FROM guest_photo_uploads
          WHERE upload_status = 'uploaded'
            AND is_visible = 1
+           AND moderation_status = 'approved'
            AND public_url IS NOT NULL
            AND public_url <> ''
          ORDER BY created_at DESC
@@ -39,9 +50,12 @@ try {
         $caption = $guestName !== '' ? 'من تصوير ' . $guestName : 'من ضيوفنا';
         $images[] = [
             'id' => 'guest-' . (int)$row['id'],
+            'source' => 'guest',
             'url' => (string)$row['public_url'],
             'caption' => $caption,
             'altText' => $caption,
+            'width' => $row['width_px'] !== null ? (int)$row['width_px'] : null,
+            'height' => $row['height_px'] !== null ? (int)$row['height_px'] : null,
             'sortOrder' => 1000000 + (int)$row['id'],
         ];
     }

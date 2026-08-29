@@ -42,9 +42,15 @@ try {
     }
 
     $userAgent = substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 500);
+    $pdo = db();
+    ensure_runtime_schema($pdo);
+    $spam = analyze_rsvp_spam($pdo, $name, $attendance, $guests, $message, $userAgent);
 
-    $stmt = db()->prepare(
-        'INSERT INTO rsvp_responses (guest_name, attendance, guests, message, user_agent) VALUES (:name, :attendance, :guests, :message, :user_agent)'
+    $stmt = $pdo->prepare(
+        'INSERT INTO rsvp_responses
+            (guest_name, attendance, guests, message, user_agent, submission_hash, spam_score, spam_reasons, is_spam)
+         VALUES
+            (:name, :attendance, :guests, :message, :user_agent, :submission_hash, :spam_score, :spam_reasons, :is_spam)'
     );
     $stmt->execute([
         ':name' => $name,
@@ -52,6 +58,10 @@ try {
         ':guests' => $guests,
         ':message' => $message !== '' ? $message : null,
         ':user_agent' => $userAgent !== '' ? $userAgent : null,
+        ':submission_hash' => $spam['submission_hash'],
+        ':spam_score' => $spam['spam_score'],
+        ':spam_reasons' => $spam['spam_reasons'],
+        ':is_spam' => $spam['is_spam'],
     ]);
 
     json_response(['ok' => true, 'message' => 'تم تسجيل تأكيد حضوركم، شكرًا لمشاركتنا فرحتنا.']);

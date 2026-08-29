@@ -8,6 +8,18 @@ const rsvpForm = document.getElementById('rsvpForm');
 const formStatus = document.getElementById('formStatus');
 const calendarLink = document.getElementById('calendarLink');
 const gallery = document.getElementById('gallery');
+const galleryShowcase = document.getElementById('galleryShowcase');
+const openFullGallery = document.getElementById('openFullGallery');
+const galleryDialog = document.getElementById('galleryDialog');
+const closeFullGallery = document.getElementById('closeFullGallery');
+const galleryWall = document.getElementById('galleryWall');
+const galleryLightbox = document.getElementById('galleryLightbox');
+const closeLightbox = document.getElementById('closeLightbox');
+const galleryLightboxImage = document.getElementById('galleryLightboxImage');
+const galleryLightboxCaption = document.getElementById('galleryLightboxCaption');
+const galleryLightboxPosition = document.getElementById('galleryLightboxPosition');
+const previousGalleryImage = document.getElementById('previousGalleryImage');
+const nextGalleryImage = document.getElementById('nextGalleryImage');
 const photoUploadForm = document.getElementById('photoUploadForm');
 const photoGuestName = document.getElementById('photoGuestName');
 const guestPhotos = document.getElementById('guestPhotos');
@@ -30,6 +42,8 @@ let musicPlaying = false;
 let invitationOpened = false;
 let touchStartY = null;
 let selectedGuestPhotos = [];
+let galleryItems = [];
+let activeGalleryIndex = -1;
 
 mapLink.href = MAP_URL;
 mapLink.addEventListener('click', () => {
@@ -345,12 +359,11 @@ photoUploadForm?.addEventListener('submit', async (event) => {
       setPhotoUploadProgress(uploaded, total);
     }
 
-    photoUploadStatus.textContent = `تم رفع ${arabicDigits.format(uploaded)} صورة بنجاح إلى ألبومنا. شكرًا لمشاركتنا اللحظة.`;
+    photoUploadStatus.textContent = `تم استلام ${arabicDigits.format(uploaded)} صورة بنجاح. ستظهر الصور المناسبة في الألبوم بعد المراجعة.`;
     photoUploadStatus.className = 'photo-upload-status success';
     selectedGuestPhotos = [];
     guestPhotos.value = '';
     renderGuestPhotoSelection();
-    await loadUploadedImages();
   } catch (error) {
     console.error('Guest photo upload failed:', error);
     photoUploadStatus.textContent = `تم رفع ${arabicDigits.format(uploaded)} من ${arabicDigits.format(total)}. ${error.message || 'تعذر إكمال رفع الصور.'}`;
@@ -365,34 +378,15 @@ photoUploadForm?.addEventListener('submit', async (event) => {
 });
 
 async function loadUploadedImages() {
-  if (!gallery) return;
+  if (!gallery || !galleryWall || !galleryShowcase) return;
   try {
     const response = await fetch('api/images.php', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
     if (!response.ok) return;
     const payload = await response.json();
     if (!payload.ok || !Array.isArray(payload.images)) return;
 
-    gallery.querySelectorAll('[data-uploaded-image]').forEach((element) => element.remove());
-
-    payload.images.forEach((item) => {
-      const figure = document.createElement('figure');
-      figure.className = 'photo-card uploaded-card';
-      figure.dataset.uploadedImage = 'true';
-
-      const img = document.createElement('img');
-      img.src = item.url;
-      img.alt = item.altText || item.caption || 'صورة من حكايتنا';
-      img.loading = 'lazy';
-      figure.appendChild(img);
-
-      if (item.caption) {
-        const caption = document.createElement('figcaption');
-        caption.textContent = item.caption;
-        figure.appendChild(caption);
-      }
-
-      gallery.appendChild(figure);
-    });
+    galleryItems = payload.images.filter((item) => item && item.url);
+    renderGalleryExperience();
   } catch (error) {
     // GitHub Pages is a static preview and intentionally has no PHP API.
     if (!location.hostname.endsWith('github.io')) {
@@ -400,6 +394,127 @@ async function loadUploadedImages() {
     }
   }
 }
+
+function galleryOrientation(item) {
+  const width = Number(item.width || 0);
+  const height = Number(item.height || 0);
+  if (!width || !height) return 'unknown';
+  const ratio = width / height;
+  if (ratio > 1.28) return 'landscape';
+  if (ratio < 0.78) return 'portrait';
+  return 'square';
+}
+
+function createGalleryTile(item, index, context) {
+  const tile = document.createElement('button');
+  tile.type = 'button';
+  tile.className = `gallery-tile ${galleryOrientation(item)}`;
+  tile.dataset.galleryIndex = String(index);
+
+  const width = Number(item.width || 0);
+  const height = Number(item.height || 0);
+  if (width > 0 && height > 0) {
+    tile.style.setProperty('--image-ratio', `${width} / ${height}`);
+  }
+
+  const img = document.createElement('img');
+  img.src = item.url;
+  img.alt = item.altText || item.caption || 'صورة من حكايتنا';
+  img.loading = context === 'preview' && index < 2 ? 'eager' : 'lazy';
+  img.decoding = 'async';
+  if (width > 0) img.width = width;
+  if (height > 0) img.height = height;
+  tile.appendChild(img);
+
+  if (item.caption) {
+    const caption = document.createElement('span');
+    caption.textContent = item.caption;
+    tile.appendChild(caption);
+  }
+
+  tile.addEventListener('click', () => {
+    if (context === 'preview') openGalleryDialog();
+    showGalleryLightbox(index);
+  });
+  return tile;
+}
+
+function renderGalleryExperience() {
+  gallery.replaceChildren();
+  galleryWall.replaceChildren();
+
+  if (galleryItems.length === 0) {
+    galleryShowcase.hidden = true;
+    return;
+  }
+
+  galleryShowcase.hidden = false;
+  galleryItems.slice(0, 6).forEach((item, index) => {
+    gallery.appendChild(createGalleryTile(item, index, 'preview'));
+  });
+  galleryItems.forEach((item, index) => {
+    galleryWall.appendChild(createGalleryTile(item, index, 'wall'));
+  });
+
+  if (openFullGallery) {
+    openFullGallery.textContent = `عرض الألبوم كاملًا — ${arabicDigits.format(galleryItems.length)} صورة`;
+  }
+}
+
+function openGalleryDialog() {
+  if (!galleryDialog) return;
+  if (typeof galleryDialog.showModal === 'function') galleryDialog.showModal();
+  else galleryDialog.setAttribute('open', '');
+  document.body.classList.add('gallery-is-open');
+}
+
+function closeGalleryDialog() {
+  if (!galleryDialog) return;
+  closeGalleryLightbox();
+  if (typeof galleryDialog.close === 'function') galleryDialog.close();
+  else galleryDialog.removeAttribute('open');
+  document.body.classList.remove('gallery-is-open');
+}
+
+function showGalleryLightbox(index) {
+  if (!galleryLightbox || galleryItems.length === 0) return;
+  activeGalleryIndex = (index + galleryItems.length) % galleryItems.length;
+  const item = galleryItems[activeGalleryIndex];
+  galleryLightboxImage.src = item.url;
+  galleryLightboxImage.alt = item.altText || item.caption || 'صورة من حكايتنا';
+  galleryLightboxCaption.textContent = item.caption || '';
+  galleryLightboxPosition.textContent = `${arabicDigits.format(activeGalleryIndex + 1)} / ${arabicDigits.format(galleryItems.length)}`;
+  galleryLightbox.hidden = false;
+}
+
+function closeGalleryLightbox() {
+  if (!galleryLightbox) return;
+  galleryLightbox.hidden = true;
+  activeGalleryIndex = -1;
+  if (galleryLightboxImage) galleryLightboxImage.removeAttribute('src');
+}
+
+openFullGallery?.addEventListener('click', openGalleryDialog);
+closeFullGallery?.addEventListener('click', closeGalleryDialog);
+closeLightbox?.addEventListener('click', closeGalleryLightbox);
+previousGalleryImage?.addEventListener('click', () => showGalleryLightbox(activeGalleryIndex - 1));
+nextGalleryImage?.addEventListener('click', () => showGalleryLightbox(activeGalleryIndex + 1));
+galleryDialog?.addEventListener('click', (event) => {
+  if (event.target === galleryDialog) closeGalleryDialog();
+});
+galleryDialog?.addEventListener('close', () => {
+  document.body.classList.remove('gallery-is-open');
+  closeGalleryLightbox();
+});
+document.addEventListener('keydown', (event) => {
+  if (!galleryDialog?.open) return;
+  if (event.key === 'ArrowLeft' && activeGalleryIndex >= 0) showGalleryLightbox(activeGalleryIndex + 1);
+  if (event.key === 'ArrowRight' && activeGalleryIndex >= 0) showGalleryLightbox(activeGalleryIndex - 1);
+  if (event.key === 'Escape' && activeGalleryIndex >= 0) {
+    event.preventDefault();
+    closeGalleryLightbox();
+  }
+});
 
 const calendarStart = '20261003T143000Z';
 const calendarEnd = '20261003T180000Z';
