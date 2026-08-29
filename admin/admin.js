@@ -21,36 +21,55 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
 
 (function setupAlbumCommentEditor() {
   const items = Array.from(document.querySelectorAll('.album-admin-item'));
-  if (!items.length) {
-    return;
-  }
+  if (!items.length) return;
 
   const csrf = document.querySelector('input[name="csrf"]')?.value || '';
   if (!csrf) {
+    console.warn('Album comment editor: CSRF token was not found.');
     return;
   }
 
   const style = document.createElement('style');
   style.textContent = `
+    .album-comment-tools {
+      display: grid;
+      gap: 8px;
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
     .album-comment-edit-button {
-      width: fit-content;
-      padding: 0;
-      border: 0;
-      background: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid rgba(226, 189, 125, .35);
+      border-radius: 11px;
+      background: rgba(226, 189, 125, .08);
       color: var(--gold-soft);
       cursor: pointer;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-weight: 700;
+      font-weight: 800;
+    }
+    .album-comment-edit-button:hover,
+    .album-comment-edit-button:focus-visible {
+      background: rgba(226, 189, 125, .15);
+      border-color: rgba(226, 189, 125, .7);
+      outline: none;
     }
     .album-comment-editor {
       display: grid;
       gap: 8px;
-      padding-top: 4px;
     }
     .album-comment-editor[hidden] { display: none; }
+    .album-comment-editor label {
+      color: var(--gold-soft);
+      font-weight: 700;
+    }
     .album-comment-editor textarea {
-      min-height: 78px;
+      min-height: 90px;
       resize: vertical;
       line-height: 1.55;
     }
@@ -60,7 +79,8 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
       flex-wrap: wrap;
     }
     .album-comment-editor-actions button {
-      min-height: 36px;
+      flex: 1 1 110px;
+      min-height: 38px;
       padding: 7px 12px;
       border-radius: 10px;
       cursor: pointer;
@@ -90,17 +110,13 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
 
   function identifyItem(item) {
     const image = item.querySelector('img');
-    if (!image) {
-      return null;
-    }
+    if (!image) return null;
 
     try {
       const url = new URL(image.getAttribute('src') || image.src, window.location.href);
       const source = url.searchParams.get('type');
       const id = Number.parseInt(url.searchParams.get('id') || '', 10);
-      if (!['site', 'guest'].includes(source) || !Number.isFinite(id) || id <= 0) {
-        return null;
-      }
+      if (!['site', 'guest'].includes(source) || !Number.isFinite(id) || id <= 0) return null;
       return { source, id };
     } catch (_error) {
       return null;
@@ -111,30 +127,35 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
 
   items.forEach((item) => {
     const identity = identifyItem(item);
-    const body = item.querySelector(':scope > div');
+    const body = Array.from(item.children).find((child) => child.tagName === 'DIV');
     const title = body?.querySelector('strong');
-    if (!identity || !body || !title) {
-      return;
-    }
+    if (!identity || !body || !title) return;
 
     const key = `${identity.source}-${identity.id}`;
+    const tools = document.createElement('div');
+    tools.className = 'album-comment-tools';
+
     const editButton = document.createElement('button');
     editButton.type = 'button';
     editButton.className = 'album-comment-edit-button';
-    editButton.textContent = 'تعديل التعليق';
+    editButton.innerHTML = '<span aria-hidden="true">✎</span><span>تعديل تعليق الصورة</span>';
 
     const editor = document.createElement('div');
     editor.className = 'album-comment-editor';
     editor.hidden = true;
 
+    const label = document.createElement('label');
+    label.textContent = 'التعليق الظاهر أسفل الصورة';
+
     const textarea = document.createElement('textarea');
     textarea.maxLength = 180;
-    textarea.placeholder = 'اكتب التعليق الذي سيظهر أسفل الصورة';
+    textarea.placeholder = 'اكتب التعليق الذي سيظهر للزوار أسفل الصورة';
     textarea.setAttribute('aria-label', 'تعليق الصورة');
+    label.appendChild(textarea);
 
     const hint = document.createElement('span');
     hint.className = 'album-comment-hint';
-    hint.textContent = 'يمكنك تركه فارغًا للرجوع إلى التعليق الافتراضي.';
+    hint.textContent = 'اتركه فارغًا لاستخدام التعليق الافتراضي.';
 
     const actions = document.createElement('div');
     actions.className = 'album-comment-editor-actions';
@@ -142,7 +163,7 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
     const saveButton = document.createElement('button');
     saveButton.type = 'button';
     saveButton.className = 'album-comment-save';
-    saveButton.textContent = 'حفظ';
+    saveButton.textContent = 'حفظ التعليق';
 
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
@@ -154,14 +175,16 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
     status.setAttribute('role', 'status');
 
     actions.append(saveButton, cancelButton);
-    editor.append(textarea, hint, actions, status);
-    body.insertBefore(editButton, body.querySelector('form') || null);
-    body.insertBefore(editor, body.querySelector('form') || null);
+    editor.append(label, hint, actions, status);
+    tools.append(editButton, editor);
+
+    const removeForm = body.querySelector('form');
+    if (removeForm) body.insertBefore(tools, removeForm);
+    else body.appendChild(tools);
 
     const state = {
       ...identity,
       key,
-      item,
       title,
       editButton,
       editor,
@@ -205,27 +228,26 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
         formData.set('id', String(state.id));
         formData.set('caption', caption);
 
-        const response = await fetch('album-comments.php', {
+        const response = await fetch(`album-comments.php?t=${Date.now()}`, {
           method: 'POST',
           body: formData,
           credentials: 'same-origin',
+          cache: 'no-store',
           headers: { Accept: 'application/json' },
         });
         const result = await response.json().catch(() => ({}));
-        if (!response.ok || !result.ok) {
-          throw new Error(result.message || 'تعذر تحديث التعليق.');
-        }
+        if (!response.ok || !result.ok) throw new Error(result.message || 'تعذر تحديث التعليق.');
 
         state.caption = result.caption || '';
         state.displayCaption = result.displayCaption || state.displayCaption;
         state.title.textContent = state.displayCaption;
-        status.textContent = 'تم الحفظ.';
+        status.textContent = 'تم حفظ التعليق.';
         status.className = 'album-comment-status is-success';
         window.setTimeout(() => {
           editor.hidden = true;
           editButton.hidden = false;
           status.textContent = '';
-        }, 500);
+        }, 650);
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : 'تعذر تحديث التعليق.';
         status.className = 'album-comment-status is-error';
@@ -236,32 +258,24 @@ document.querySelectorAll('form:not([data-confirm]):not([data-confirm-permanent]
     });
   });
 
-  if (!itemMap.size) {
-    return;
-  }
+  if (!itemMap.size) return;
 
-  fetch('album-comments.php', {
+  fetch(`album-comments.php?t=${Date.now()}`, {
     method: 'GET',
     credentials: 'same-origin',
+    cache: 'no-store',
     headers: { Accept: 'application/json' },
   })
     .then((response) => response.json().then((body) => ({ response, body })))
     .then(({ response, body }) => {
-      if (!response.ok || !body.ok || !body.comments) {
-        return;
-      }
-
+      if (!response.ok || !body.ok || !body.comments) return;
       Object.entries(body.comments).forEach(([key, comment]) => {
         const state = itemMap.get(key);
-        if (!state) {
-          return;
-        }
+        if (!state) return;
         state.caption = String(comment.caption || '');
         state.displayCaption = String(comment.displayCaption || state.displayCaption);
         state.title.textContent = state.displayCaption;
       });
     })
-    .catch(() => {
-      // The album remains usable even if the edit metadata cannot be loaded.
-    });
+    .catch((error) => console.warn('Could not load album comments:', error));
 })();
