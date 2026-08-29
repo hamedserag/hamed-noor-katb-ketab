@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="final.css" />
   <link rel="stylesheet" href="guest-upload.css" />
-  <link rel="stylesheet" href="gallery-experience.css" />
+  <link rel="stylesheet" href="gallery-experience.css?v=20260829-2" />
 </head>
 <body>
   <div class="palace-glow glow-one"></div><div class="palace-glow glow-two"></div>
@@ -87,11 +87,12 @@
         <button id="photoUploadButton" class="primary-button" type="submit">رفع الصور إلى ألبومنا</button>
         <p id="photoUploadStatus" class="photo-upload-status" role="status" aria-live="polite"></p>
       </form>
-      <div id="galleryShowcase" class="gallery-showcase" hidden>
+      <div id="galleryShowcase" class="gallery-showcase">
         <div class="gallery-showcase-heading">
           <div><p class="section-label">ألبوم حامد ونور</p><h3>لحظات بعدسات من نحب</h3></div>
           <button id="openFullGallery" class="secondary-button gallery-open-button" type="button">عرض الألبوم كاملًا</button>
         </div>
+        <p id="galleryStatus" class="gallery-status" role="status">جارٍ تحميل صور الألبوم…</p>
         <div id="gallery" class="gallery-preview" aria-live="polite"></div>
       </div>
     </section>
@@ -112,6 +113,7 @@
       <button id="previousGalleryImage" class="gallery-nav gallery-nav-previous" type="button" aria-label="الصورة السابقة">‹</button>
       <figure><img id="galleryLightboxImage" alt=""><figcaption id="galleryLightboxCaption"></figcaption></figure>
       <button id="nextGalleryImage" class="gallery-nav gallery-nav-next" type="button" aria-label="الصورة التالية">›</button>
+      <div id="galleryThumbnailRail" class="gallery-thumbnail-rail" aria-label="صور قريبة من الصورة الحالية"></div>
       <span id="galleryLightboxPosition" class="gallery-position"></span>
     </div>
   </dialog>
@@ -119,6 +121,6 @@
   <button class="music-toggle" id="musicToggle" type="button" aria-label="تشغيل الموسيقى"><span>♫</span></button>
   <div class="youtube-player" aria-hidden="true"><div id="musicPlayer"></div></div>
   <a class="music-fallback" id="musicFallback" href="https://youtube.com/shorts/2c0UFobfOiM?si=hjaQ8RWySI4OEFrv" target="_blank" rel="noopener noreferrer" hidden>تشغيل الموسيقى</a>
-  <script src="https://www.youtube.com/iframe_api"></script><script src="app.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script><script src="app.js?v=20260829-2"></script><script src="gallery-runtime.js?v=20260829-2"></script>
 </body>
 </html>
