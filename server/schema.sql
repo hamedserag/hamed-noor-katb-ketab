@@ -44,10 +44,14 @@ CREATE TABLE IF NOT EXISTS guest_photo_uploads (
     size_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,
     drive_file_id VARCHAR(160) NULL,
     drive_url VARCHAR(700) NULL,
+    storage_path VARCHAR(500) NULL,
+    public_url VARCHAR(700) NULL,
+    is_visible TINYINT(1) NOT NULL DEFAULT 1,
     upload_status ENUM('uploaded','failed') NOT NULL,
     error_message VARCHAR(1000) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY ix_guest_photo_uploads_status (upload_status),
-    KEY ix_guest_photo_uploads_created_at (created_at)
+    KEY ix_guest_photo_uploads_created_at (created_at),
+    KEY ix_guest_photo_uploads_gallery (upload_status, is_visible, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

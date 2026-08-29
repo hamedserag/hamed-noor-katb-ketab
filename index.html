@@ -72,7 +72,7 @@
     <section class="section guest-photos reveal">
       <p class="section-label">صور من فرحتنا</p>
       <h2>شاركنا اللحظات التي التقطتها</h2>
-      <p class="guest-photo-note">بعد كتب الكتاب، يمكنك رفع صورك مباشرة من هاتفك. ستصل الصور إلى ألبوم حامد ونور الخاص على Google Drive.</p>
+      <p class="guest-photo-note">بعد كتب الكتاب، يمكنك رفع صورك مباشرة من هاتفك. تحفظ الصور على موقع حامد ونور وتظهر في الألبوم العام أدناه.</p>
       <form id="photoUploadForm" class="photo-upload-card" enctype="multipart/form-data">
         <label>اسمك — اختياري<input id="photoGuestName" name="guest_name" maxlength="160" autocomplete="name" /></label>
         <label class="photo-picker" for="guestPhotos">
@@ -86,6 +86,7 @@
         <button id="photoUploadButton" class="primary-button" type="submit">رفع الصور إلى ألبومنا</button>
         <p id="photoUploadStatus" class="photo-upload-status" role="status" aria-live="polite"></p>
       </form>
+      <div id="gallery" class="gallery" aria-live="polite"></div>
     </section>
 
     <section class="section closing reveal"><div class="monogram">ح ن</div><h2>حضوركم يكتمل به فرحتنا</h2><p>حامد ونور</p><a href="#top">العودة إلى البداية</a></section>

@@ -7,7 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $rows = db()->query(
+    $pdo = db();
+    $rows = $pdo->query(
         'SELECT id, file_name, caption, alt_text, sort_order, created_at FROM site_images WHERE is_active = 1 ORDER BY sort_order ASC, created_at ASC'
     )->fetchAll();
 
@@ -20,6 +21,30 @@ try {
             'sortOrder' => (int)$row['sort_order'],
         ];
     }, $rows);
+
+    ensure_guest_photo_table($pdo);
+    $guestRows = $pdo->query(
+        "SELECT id, guest_name, original_name, public_url, created_at
+         FROM guest_photo_uploads
+         WHERE upload_status = 'uploaded'
+           AND is_visible = 1
+           AND public_url IS NOT NULL
+           AND public_url <> ''
+         ORDER BY created_at DESC
+         LIMIT 100"
+    )->fetchAll();
+
+    foreach ($guestRows as $row) {
+        $guestName = trim((string)($row['guest_name'] ?? ''));
+        $caption = $guestName !== '' ? 'من تصوير ' . $guestName : 'من ضيوفنا';
+        $images[] = [
+            'id' => 'guest-' . (int)$row['id'],
+            'url' => (string)$row['public_url'],
+            'caption' => $caption,
+            'altText' => $caption,
+            'sortOrder' => 1000000 + (int)$row['id'],
+        ];
+    }
 
     json_response(['ok' => true, 'images' => $images]);
 } catch (Throwable $e) {

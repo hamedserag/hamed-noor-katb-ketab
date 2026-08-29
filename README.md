@@ -4,176 +4,91 @@
 
 ## الوضع الحالي
 
-- الواجهة الأمامية تعمل كصفحة ثابتة ويمكن معاينتها عبر GitHub Pages.
-- على Hostinger يتم تفعيل Backend PHP/MySQL لتأكيد الحضور ورفع صور الضيوف.
+- الواجهة الأمامية تعمل كصفحة ثابتة، مع Backend PHP/MySQL على Hostinger.
 - تأكيدات الحضور تحفظ في MySQL من خلال `api/rsvp.php`.
-- يوجد زر عام للضيوف لرفع صور كتب الكتاب من الهاتف مباشرة.
-- صور الضيوف تمر عبر Hostinger PHP ثم Google Apps Script وتحفظ في Google Drive الخاص بحامد ونور.
-- بيانات كل عملية رفع تحفظ كذلك في MySQL داخل `guest_photo_uploads`.
+- صور الضيوف ترفع إلى تخزين موقع Hostinger داخل `uploads/guest-photos/`.
+- بيانات الصور ومساراتها تحفظ في جدول `guest_photo_uploads`.
+- الصور الناجحة تظهر تلقائيًا في الألبوم العام على صفحة الدعوة.
 - لوحة الإدارة موجودة تحت `/admin/`.
-- يظل رفع صور معرض الدعوة من لوحة الإدارة إلى `uploads/` كما هو، بشكل مستقل عن صور الضيوف الخاصة على Google Drive.
 
 ## نشر النسخة الكاملة على Hostinger
 
-1. أنشئ قاعدة MySQL ومستخدمًا لها من hPanel في Hostinger.
-2. انسخ `server/config.example.php` إلى `server/config.local.php` على الخادم.
+1. أنشئ قاعدة MySQL ومستخدمًا لها من hPanel إذا لم تكن موجودة.
+2. انسخ `server/config.example.php` إلى `server/config.local.php` على الخادم عند النشر لأول مرة فقط.
 3. ضع بيانات قاعدة البيانات الفعلية في `server/config.local.php`.
-4. أكمل إعداد Google Apps Script الموضح أدناه، ثم أضف رابط Web App والـ secret إلى `server/config.local.php`.
-5. انشر محتويات المستودع داخل `public_html` أو مجلد الموقع المطلوب.
-6. افتح `/admin/`.
-7. اضغط **إنشاء الجداول** إذا كانت قاعدة البيانات جديدة، ثم أنشئ أول حساب مدير.
-8. اختبر نموذج **تأكيد الحضور** وتحقق من ظهوره في لوحة الإدارة.
-9. اختبر زر **رفع الصور إلى ألبومنا** من هاتف حقيقي وتحقق من وصول الصورة إلى Google Drive.
+4. انشر محتويات المستودع داخل `public_html` أو مجلد الموقع المطلوب.
+5. تأكد أن مجلد `uploads/` قابل للكتابة بواسطة PHP. الإعداد المعتاد هو `755` للمجلدات و`644` للملفات.
+6. افتح `/admin/` وأنشئ الجداول والحساب الإداري إذا كانت قاعدة البيانات جديدة.
+7. اختبر تأكيد الحضور ثم ارفع صورة تجريبية من صفحة الدعوة.
+8. تحقق من ظهور الصورة في الصفحة ومن وجودها في Hostinger File Manager تحت `public_html/uploads/guest-photos/`.
 
-> ملف `server/config.local.php` مستبعد من Git ولا يجب رفع كلمات مرور قاعدة البيانات أو secret الخاص بالصور إلى المستودع.
+عند التحديث فوق موقع قائم، لا تستبدل `server/config.local.php`. الملف مستبعد من Git ويحمل بيانات قاعدة البيانات الخاصة بالموقع.
 
 ## قاعدة البيانات
 
-المخطط موجود في:
-
-`server/schema.sql`
-
-ويحتوي على:
+المخطط موجود في `server/schema.sql` ويحتوي على:
 
 - `admin_users`
 - `rsvp_responses`
 - `site_images`
 - `guest_photo_uploads`
 
-`api/upload-photo.php` ينفذ `CREATE TABLE IF NOT EXISTS guest_photo_uploads` أيضًا، لذلك يمكن نشر هذه الإضافة على قاعدة موجودة بدون حذف البيانات الحالية.
+`api/upload-photo.php` يشغّل ترحيلًا آمنًا عند أول رفع. ينشئ جدول `guest_photo_uploads` إذا لم يكن موجودًا، ويضيف أعمدة التخزين الجديدة إلى الجدول القديم دون حذف الصفوف أو أعمدة Google Drive القديمة:
+
+- `storage_path`
+- `public_url`
+- `is_visible`
 
 ## تأكيد الحضور
 
-عند النشر على Hostinger يرسل النموذج البيانات إلى:
+يرسل النموذج البيانات إلى `api/rsvp.php` ويحفظها في `rsvp_responses`. البيانات تشمل الاسم، حالة الحضور، عدد الحضور، الرسالة، ووقت التسجيل.
 
-`api/rsvp.php`
+على GitHub Pages فقط، لأن PHP غير مدعوم، يحفظ نموذج المعاينة الرد محليًا على جهاز المتصفح بدل قاعدة البيانات.
 
-وتحفظ مباشرة في جدول:
-
-`rsvp_responses`
-
-البيانات الحالية تشمل الاسم، حالة الحضور، عدد الحضور، الرسالة، ووقت التسجيل.
-
-على GitHub Pages فقط، لأن PHP غير مدعوم، يبقى السلوك كنسخة معاينة ويحفظ الرد محليًا على جهاز المتصفح بدل قاعدة البيانات.
-
-## صور الضيوف على Google Drive
-
-تم تخصيص مجلد Google Drive التالي لصور الضيوف:
-
-- الاسم: `Hamed & Noor - Wedding Guest Photos`
-- Folder ID: `16GHLIT64O9zGlpI8SCbAX3vDfDJziw6K`
-
-وجود Folder ID في المستودع لا يمنح أي شخص صلاحية الدخول إلى المجلد؛ صلاحيات Google Drive نفسها تبقى هي الحاكمة.
-
-### لماذا يوجد Google Apps Script؟
-
-المتصفح لا يتصل بـ Google Drive مباشرة ولا توجد أي Google credentials في JavaScript العام.
-
-المسار هو:
-
-```text
-Guest browser
-   -> api/upload-photo.php on Hostinger
-   -> Google Apps Script Web App
-   -> private Google Drive folder
-```
-
-الـ secret يبقى على Hostinger وفي Script Properties فقط ولا يرسل إلى متصفح الضيف.
-
-### إعداد Google Apps Script
-
-1. افتح `https://script.google.com` بالحساب الذي لديه صلاحية الكتابة على مجلد الصور.
-2. أنشئ مشروع Apps Script جديد.
-3. انسخ محتوى:
-
-   `google-apps-script/Code.gs`
-
-   إلى ملف `Code.gs` في المشروع.
-4. من **Project Settings -> Script Properties** أضف:
-
-   - Property: `UPLOAD_SECRET`
-   - Value: secret عشوائي طويل، مثال يمكنك توليده محليًا بـ:
-
-     ```bash
-     openssl rand -hex 32
-     ```
-
-5. اختر **Deploy -> New deployment -> Web app**.
-6. اجعل **Execute as** = `Me`.
-7. اجعل الوصول إلى Web App متاحًا لاستدعاء الموقع العام. الحماية الفعلية للرفع تتم عبر `UPLOAD_SECRET` الذي يتحقق منه السكربت.
-8. وافق على صلاحية Google Drive عند الطلب.
-9. انسخ رابط Web App الذي ينتهي بـ `/exec`.
-10. على Hostinger أنشئ `server/config.local.php` وأضف الرابط ونفس الـ secret.
-
-مثال:
-
-```php
-<?php
-return [
-    'db_host' => 'localhost',
-    'db_port' => 3306,
-    'db_name' => 'YOUR_DB_NAME',
-    'db_user' => 'YOUR_DB_USER',
-    'db_password' => 'YOUR_DB_PASSWORD',
-
-    'guest_photo_upload_url' => 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec',
-    'guest_photo_upload_secret' => 'THE_SAME_LONG_RANDOM_SECRET',
-    'max_guest_photo_bytes' => 10 * 1024 * 1024,
-];
-```
-
-## رفع الصور من الدعوة
+## رفع صور الضيوف إلى Hostinger
 
 قسم **صور من فرحتنا** يسمح للضيف بـ:
 
 - كتابة اسمه اختياريًا.
 - اختيار حتى 8 صور في المرة الواحدة.
 - رفع JPG / PNG / WebP / HEIC.
-- حد أقصى 10 MB للصورة.
-- مشاهدة تقدم الرفع من نفس الصفحة.
+- رفع صورة بحجم أقصى 10 MB.
+- مشاهدة تقدم الرفع وظهور الصور في الألبوم بعد النجاح.
 
-كل صورة ترسل كطلب مستقل حتى لا يؤدي فشل صورة واحدة إلى فقدان بقية المجموعة.
+كل صورة ترسل في طلب مستقل إلى `api/upload-photo.php`. يتحقق PHP من نوع الملف وحجمه، ينشئ اسمًا عشوائيًا، ثم يحفظ الملف في:
 
-يحفظ MySQL لكل عملية رفع:
+`uploads/guest-photos/`
 
-- اسم الضيف إن وُجد.
-- اسم الملف الأصلي.
-- الاسم المستخدم داخل Drive.
-- MIME type والحجم.
-- Google Drive file ID والرابط عند النجاح.
-- حالة النجاح أو الفشل ورسالة الخطأ عند الفشل.
+يحفظ MySQL اسم الضيف، اسم الملف الأصلي والمخزن، نوع MIME، الحجم، مسار التخزين، الرابط العام، حالة الرفع، ووقت التسجيل.
 
-## رفع صور معرض الدعوة من لوحة الإدارة
+لأن هذا المشروع يستخدم ألبومًا عامًا، `is_visible` يساوي `1` عند الرفع وتعيد `api/images.php` آخر 100 صورة ناجحة ومرئية. لا ترفع صورًا خاصة أو حساسة.
 
-المسار القديم ما زال متاحًا من `/admin/` لرفع صور JPG / PNG / WebP إلى معرض الموقع نفسه.
+## حماية مجلد الرفع
 
-هذه الصور تحفظ في:
+`uploads/.htaccess` يمنع عرض قائمة الملفات ويمنع تنفيذ امتدادات السكربت داخل مجلد الرفع. اترك هذا الملف على Hostinger.
 
-`uploads/`
+الرفع يقبل أنواع الصور المعروفة بواسطة PHP `fileinfo`، ولا يستخدم اسم الملف المرسل من المتصفح كاسم تخزين. هذا يقلل خطر رفع ملفات تنفيذية أو استبدال ملفات موجودة.
 
-وتسجل بياناتها في:
+## صور معرض الإدارة
 
-`site_images`
-
-وهي مستقلة عن صور الضيوف التي تحفظ في Google Drive.
+المسار الموجود في `/admin/` يظل متاحًا لرفع صور JPG / PNG / WebP. تحفظ هذه الصور مباشرة في `uploads/` وتسجل بياناتها في `site_images`. يعرض الألبوم صور الإدارة وصور الضيوف معًا.
 
 ## متطلبات PHP
 
-يوصى بـ PHP 8.x مع الإضافات التالية مفعلة:
+استخدم PHP 8.x مع:
 
 - PDO MySQL
 - mbstring
 - fileinfo
-- cURL — موصى به لرفع الصور إلى Google Apps Script، ويوجد fallback عبر PHP streams إذا لم يكن متاحًا.
 
-## التشغيل كواجهة ثابتة فقط
+وتأكد أن إعدادات Hostinger `upload_max_filesize` و`post_max_size` تسمحان برفع 10 MB على الأقل للصورة.
 
-يمكن تشغيل نسخة المعاينة محليًا بدون PHP:
+## المعاينة الثابتة
+
+يمكن تشغيل واجهة المعاينة محليًا:
 
 ```bash
 python -m http.server 8080
 ```
 
-ثم افتح `http://localhost:8080`.
-
-في المعاينة الثابتة لن تعمل عمليات MySQL أو Google Drive لأنها تحتاج Hostinger PHP.
+ثم افتح `http://localhost:8080`. عمليات MySQL ورفع الملفات تحتاج نسخة Hostinger التي تشغّل PHP.

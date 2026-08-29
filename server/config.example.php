@@ -10,9 +10,6 @@ return [
     // Maximum uploaded gallery image size in bytes (10 MB by default).
     'max_upload_bytes' => 10 * 1024 * 1024,
 
-    // Guest wedding photos -> Hostinger PHP -> Google Apps Script -> Google Drive.
-    // Never commit the real secret to GitHub; put it only in server/config.local.php.
-    'guest_photo_upload_url' => 'https://script.google.com/macros/s/PASTE_DEPLOYMENT_ID/exec',
-    'guest_photo_upload_secret' => 'CHANGE_ME_TO_A_LONG_RANDOM_SECRET',
+    // Guest wedding photos are stored in uploads/guest-photos on Hostinger.
     'max_guest_photo_bytes' => 10 * 1024 * 1024,
 ];

@@ -350,6 +350,7 @@ photoUploadForm?.addEventListener('submit', async (event) => {
     selectedGuestPhotos = [];
     guestPhotos.value = '';
     renderGuestPhotoSelection();
+    await loadUploadedImages();
   } catch (error) {
     console.error('Guest photo upload failed:', error);
     photoUploadStatus.textContent = `تم رفع ${arabicDigits.format(uploaded)} من ${arabicDigits.format(total)}. ${error.message || 'تعذر إكمال رفع الصور.'}`;
@@ -371,9 +372,12 @@ async function loadUploadedImages() {
     const payload = await response.json();
     if (!payload.ok || !Array.isArray(payload.images)) return;
 
+    gallery.querySelectorAll('[data-uploaded-image]').forEach((element) => element.remove());
+
     payload.images.forEach((item) => {
       const figure = document.createElement('figure');
       figure.className = 'photo-card uploaded-card';
+      figure.dataset.uploadedImage = 'true';
 
       const img = document.createElement('img');
       img.src = item.url;
