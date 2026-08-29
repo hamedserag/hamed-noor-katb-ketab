@@ -9,6 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $pdo = db();
     ensure_runtime_schema($pdo);
+    add_database_column($pdo, 'guest_photo_uploads', 'caption', 'VARCHAR(180) NULL AFTER guest_name');
+
     $rows = $pdo->query(
         "SELECT id, file_name, storage_path, caption, alt_text, width_px, height_px, sort_order, created_at
          FROM site_images
@@ -34,7 +36,7 @@ try {
     }, $rows);
 
     $guestRows = $pdo->query(
-        "SELECT id, guest_name, original_name, public_url, width_px, height_px, created_at
+        "SELECT id, guest_name, caption, original_name, public_url, width_px, height_px, created_at
          FROM guest_photo_uploads
          WHERE upload_status = 'uploaded'
            AND is_visible = 1
@@ -47,7 +49,10 @@ try {
 
     foreach ($guestRows as $row) {
         $guestName = trim((string)($row['guest_name'] ?? ''));
-        $caption = $guestName !== '' ? 'من تصوير ' . $guestName : 'من ضيوفنا';
+        $customCaption = trim((string)($row['caption'] ?? ''));
+        $caption = $customCaption !== ''
+            ? $customCaption
+            : ($guestName !== '' ? 'من تصوير ' . $guestName : 'من ضيوفنا');
         $images[] = [
             'id' => 'guest-' . (int)$row['id'],
             'source' => 'guest',
