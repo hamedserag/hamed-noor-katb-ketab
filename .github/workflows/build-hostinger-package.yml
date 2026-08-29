@@ -1,0 +1,74 @@
+name: Build Hostinger Full Package
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Build deployment artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build full project package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf hostinger-package
+          mkdir -p hostinger-package
+
+          # Copy the complete checked-out project while excluding only
+          # Git metadata and the live database connection configuration.
+          rsync -a ./ hostinger-package/ \
+            --exclude='.git/' \
+            --exclude='hostinger-package/' \
+            --exclude='server/config.local.php'
+
+          # Safety check: never publish the live database configuration.
+          if find hostinger-package -type f -path '*/server/config.local.php' -print -quit | grep -q .; then
+            echo 'ERROR: server/config.local.php was found in the deployment package.' >&2
+            exit 1
+          fi
+
+          # Keep the example config so a new environment still has a template.
+          if [ ! -f hostinger-package/server/config.example.php ]; then
+            echo 'ERROR: server/config.example.php is missing from the package.' >&2
+            exit 1
+          fi
+
+          cat > hostinger-package/PACKAGE_INFO.txt <<EOF
+          Hamed & Noor Katb Ketab - Hostinger Full Package
+          Commit: ${GITHUB_SHA}
+          Run: ${GITHUB_RUN_NUMBER}
+
+          This artifact contains the complete project from GitHub.
+          Excluded intentionally:
+          - .git/ metadata
+          - server/config.local.php (live database credentials/configuration)
+
+          Before deploying over an existing Hostinger site:
+          - keep the existing server/config.local.php
+          - keep runtime uploaded images/data that are not stored in Git
+          EOF
+
+          echo 'Package contents:'
+          find hostinger-package -maxdepth 3 -type f | sort
+
+      - name: Upload Hostinger package
+        uses: actions/upload-artifact@v4
+        with:
+          name: hamed-noor-katb-ketab-hostinger-full-${{ github.run_number }}
+          path: hostinger-package/
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 9
+          retention-days: 30
